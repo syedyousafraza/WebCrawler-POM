@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Test Case Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        #output {
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Automation Test Case Generator</h1>
+    <input type="text" id="urlInput" placeholder="Enter website URL">
+    <select id="frameworkSelect">
+        <option value="cypress">Cypress</option>
+        <option value="playwright">Playwright</option>
+        <option value="selenium">Selenium</option>
+    </select>
+    <button onclick="generateTestCases()">Generate Test Cases</button>
+    <div id="output"></div>
+
+    <script>
+        async function generateTestCases() {
+            const url = document.getElementById('urlInput').value;
+            const framework = document.getElementById('frameworkSelect').value;
+            const output = document.getElementById('output');
+
+            if (!url) {
+                output.innerHTML = '<span class="error">Please enter a URL</span>';
+                return;
+            }
+
+            output.textContent = 'Crawling website and generating test cases...';
+
+            try {
+                const response = await axios.post('http://localhost:3000/generate', { url, framework });
+                if (response.data.testCases) {
+                    output.textContent = response.data.testCases;
+                } else {
+                    output.innerHTML = '<span class="error">No test cases generated. The website might be empty or inaccessible.</span>';
+                }
+            } catch (error) {
+                if (error.response) {
+                    output.innerHTML = `<span class="error">Error: ${error.response.data.error}</span>`;
+                } else if (error.request) {
+                    output.innerHTML = '<span class="error">Error: Could not connect to the server. Make sure the backend is running.</span>';
+                } else {
+                    output.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
